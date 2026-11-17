@@ -1,4 +1,5 @@
 using RetroGames.WebApi.Configuration;
+using RetroGames.WebApi.Middlewares;
 
 // Carrega o .env (procurando nas pastas acima, até a raiz do repositório) como variáveis de ambiente.
 // "ConnectionStrings__Default" vira a chave de configuração "ConnectionStrings:Default".
@@ -17,10 +18,16 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Primeiro do pipeline: captura exceções de tudo que vem depois.
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
