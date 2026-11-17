@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Mappers;
 
 namespace RetroGames.WebApi.Controllers;
@@ -34,6 +36,7 @@ public class JogoController : ControllerBase
     }
 
     /// <summary>Grava o jogo com seus gêneros. HTTP 201 com o header Location.</summary>
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpPost]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
         [FromBody] InserirJogoRequestApiModel request)
@@ -45,6 +48,7 @@ public class JogoController : ControllerBase
             new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(criado.ParaResponsePorId()));
     }
 
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Alterar(
         int id, [FromBody] AlterarJogoRequestApiModel request)
@@ -54,6 +58,7 @@ public class JogoController : ControllerBase
     }
 
     /// <summary>Exclusão lógica (RN03): o jogo fica inativo e sai do catálogo. HTTP 200 com o envelope.</summary>
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
     {

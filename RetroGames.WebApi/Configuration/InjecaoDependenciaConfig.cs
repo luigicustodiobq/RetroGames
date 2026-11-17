@@ -1,5 +1,6 @@
 using RetroGames.Repository;
 using RetroGames.Services;
+using RetroGames.WebApi.Services;
 
 namespace RetroGames.WebApi.Configuration;
 
@@ -32,6 +33,10 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IGeneroService, GeneroService>();
         services.AddScoped<ICondicaoJogoService, CondicaoJogoService>();
         services.AddScoped<IJogoService, JogoService>();
+
+        // Usuário da requisição atual (lido do cookie), usado pelo JogoService na RN04.
+        services.AddHttpContextAccessor();
+        services.AddScoped<IUsuarioAtualService, UsuarioAtualService>();
 
         return services;
     }

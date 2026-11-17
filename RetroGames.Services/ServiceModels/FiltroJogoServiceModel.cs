@@ -12,4 +12,7 @@ public class FiltroJogoServiceModel
     public int Pagina { get; set; } = 1;
 
     public int TamanhoPagina { get; set; } = 12;
+
+    /// <summary>Pedido para trazer inativos; o JogoService só atende se o usuário for administrador (RN04).</summary>
+    public bool IncluirInativos { get; set; }
 }

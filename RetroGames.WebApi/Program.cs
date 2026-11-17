@@ -27,6 +27,7 @@ builder.Services.AddServicosDeNegocio();
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
 builder.Services.AddAutenticacaoPorCookie();
+builder.Services.AddAutorizacao();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

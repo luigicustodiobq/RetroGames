@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Mappers;
 
 namespace RetroGames.WebApi.Controllers;
@@ -36,6 +38,7 @@ public class PlataformaController : ControllerBase
     }
 
     /// <summary>HTTP 201 com o header Location apontando para GET /api/Plataforma/{id}.</summary>
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpPost]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>> Inserir(
         [FromBody] InserirPlataformaRequestApiModel request)
@@ -47,6 +50,7 @@ public class PlataformaController : ControllerBase
             new RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>(criada.ParaResponse()));
     }
 
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>> Alterar(
         int id, [FromBody] AlterarPlataformaRequestApiModel request)
@@ -56,6 +60,7 @@ public class PlataformaController : ControllerBase
     }
 
     /// <summary>HTTP 200 com o envelope (a API não usa 204).</summary>
+    [Authorize(Policy = Politicas.SomenteAdministrador)]
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
     {

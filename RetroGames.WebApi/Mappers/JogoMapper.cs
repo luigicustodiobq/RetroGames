@@ -15,7 +15,8 @@ public static class JogoMapper
             IdPlataforma = request.IdPlataforma,
             IdGenero = request.IdGenero,
             Pagina = request.Pagina,
-            TamanhoPagina = request.TamanhoPagina
+            TamanhoPagina = request.TamanhoPagina,
+            IncluirInativos = request.IncluirInativos
         };
     }
 
