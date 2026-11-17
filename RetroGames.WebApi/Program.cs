@@ -1,4 +1,7 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
+using RetroGames.Model.Model;
+using RetroGames.Services;
 using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Filters;
 using RetroGames.WebApi.Middlewares;
@@ -20,6 +23,10 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
 
+// Hash de senha (PBKDF2 com salt) e autenticação.
+builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -40,6 +47,23 @@ builder.Services
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Cria o administrador inicial (dados do .env) se ainda não existir nenhum administrador.
+// Os Services são Scoped, por isso é preciso abrir um escopo fora de uma requisição.
+using (var escopo = app.Services.CreateScope())
+{
+    var emailAdmin = app.Configuration["AdminInicial:Email"];
+    var senhaAdmin = app.Configuration["AdminInicial:Senha"];
+    if (string.IsNullOrWhiteSpace(emailAdmin) || string.IsNullOrWhiteSpace(senhaAdmin))
+    {
+        throw new InvalidOperationException(
+            "Dados do administrador inicial não encontrados. " +
+            "Informe AdminInicial__Email e AdminInicial__Senha no arquivo .env.");
+    }
+
+    var autenticacaoService = escopo.ServiceProvider.GetRequiredService<IAutenticacaoService>();
+    await autenticacaoService.GarantirAdministradorInicialAsync(emailAdmin, senhaAdmin);
+}
 
 // Primeiro do pipeline: captura exceções de tudo que vem depois.
 app.UseExceptionHandler();

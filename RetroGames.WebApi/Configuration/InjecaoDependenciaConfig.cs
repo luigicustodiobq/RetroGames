@@ -19,6 +19,7 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IJogoGeneroRepository, JogoGeneroRepository>();
         services.AddScoped<IGeneroRepository, GeneroRepository>();
         services.AddScoped<ICondicaoJogoRepository, CondicaoJogoRepository>();
+        services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<IRepositorySet, RepositorySet>();
 
         return services;
