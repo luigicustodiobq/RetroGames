@@ -11,15 +11,17 @@ namespace RetroGames.WebApi.Configuration;
 /// </summary>
 public static class ModelStateInvalidoConfig
 {
+    private const string MensagemValorInvalido = "Valor inválido ou JSON malformado.";
+
     public static IActionResult CriarResposta(ActionContext context)
     {
+        // As mensagens do model binding são técnicas e em inglês (citam tipos .NET);
+        // por isso cada campo recebe uma mensagem fixa em português.
         var errosPorCampo = context.ModelState
             .Where(entrada => entrada.Value is { Errors.Count: > 0 })
             .ToDictionary(
                 entrada => NormalizarCampo(entrada.Key),
-                entrada => entrada.Value!.Errors
-                    .Select(erro => string.IsNullOrWhiteSpace(erro.ErrorMessage) ? "Valor inválido." : erro.ErrorMessage)
-                    .ToArray());
+                _ => new[] { MensagemValorInvalido });
 
         return new BadRequestObjectResult(
             new RetroGamesResponseApiModel<Dictionary<string, string[]>>(

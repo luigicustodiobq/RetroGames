@@ -16,4 +16,26 @@ public static class PlataformaMapper
             AnoLancamento = plataforma.AnoLancamento
         };
     }
+
+    public static Plataforma ParaModel(this InserirPlataformaRequestApiModel request)
+    {
+        return new Plataforma
+        {
+            Nome = request.Nome ?? string.Empty,
+            Fabricante = request.Fabricante ?? string.Empty,
+            AnoLancamento = request.AnoLancamento
+        };
+    }
+
+    /// <summary>O id vem da rota (PUT /api/Plataforma/{id}), não do corpo.</summary>
+    public static Plataforma ParaModel(this AlterarPlataformaRequestApiModel request, int id)
+    {
+        return new Plataforma
+        {
+            Id = id,
+            Nome = request.Nome ?? string.Empty,
+            Fabricante = request.Fabricante ?? string.Empty,
+            AnoLancamento = request.AnoLancamento
+        };
+    }
 }
