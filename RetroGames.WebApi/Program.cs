@@ -26,6 +26,7 @@ builder.Services.AddServicosDeNegocio();
 // Hash de senha (PBKDF2 com salt) e autenticação.
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
+builder.Services.AddAutenticacaoPorCookie();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -74,6 +75,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwaggerUI(opcoes => opcoes.SwaggerEndpoint("/openapi/v1.json", "RetroGames API v1"));
 }
+
+// Nesta ordem: primeiro descobre quem é o usuário (cookie), depois confere se ele pode acessar a rota.
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
