@@ -1,4 +1,6 @@
+using FluentValidation;
 using RetroGames.WebApi.Configuration;
+using RetroGames.WebApi.Filters;
 using RetroGames.WebApi.Middlewares;
 
 // Carrega o .env (procurando nas pastas acima, até a raiz do repositório) como variáveis de ambiente.
@@ -21,7 +23,20 @@ builder.Services.AddServicosDeNegocio();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddControllers();
+// Todos os validators (AbstractValidator<T>) deste projeto entram na injeção de dependência.
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services
+    .AddControllers(opcoes =>
+    {
+        opcoes.Filters.Add<FluentValidationFilter>();
+        // Corpo vazio chega como null na action, e o FluentValidationFilter responde MODEL_NULL (2).
+        opcoes.AllowEmptyInputInBodyModelBinding = true;
+        // Sem "required" implícito para string não anulável: o formato é validado só pelo FluentValidation.
+        opcoes.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    })
+    .ConfigureApiBehaviorOptions(opcoes =>
+        opcoes.InvalidModelStateResponseFactory = ModelStateInvalidoConfig.CriarResposta);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
