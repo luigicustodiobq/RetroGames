@@ -32,4 +32,32 @@ public class JogoController : ControllerBase
         var detalhe = await jogoService.BuscarPorIdAsync(id);
         return Ok(new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(detalhe.ParaResponsePorId()));
     }
+
+    /// <summary>Grava o jogo com seus gêneros. HTTP 201 com o header Location.</summary>
+    [HttpPost]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
+        [FromBody] InserirJogoRequestApiModel request)
+    {
+        var criado = await jogoService.InserirAsync(request.ParaModel(), request.IdsGeneros ?? new List<int>());
+        return CreatedAtAction(
+            nameof(ListarPorId),
+            new { id = criado.Jogo.Id },
+            new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(criado.ParaResponsePorId()));
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Alterar(
+        int id, [FromBody] AlterarJogoRequestApiModel request)
+    {
+        var alterado = await jogoService.AlterarAsync(request.ParaModel(id), request.IdsGeneros ?? new List<int>());
+        return Ok(new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(alterado.ParaResponsePorId()));
+    }
+
+    /// <summary>Exclusão lógica (RN03): o jogo fica inativo e sai do catálogo. HTTP 200 com o envelope.</summary>
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
+    {
+        await jogoService.DesativarAsync(id);
+        return Ok(new RetroGamesResponseApiModel());
+    }
 }

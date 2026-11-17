@@ -1,3 +1,4 @@
+using RetroGames.Model.Model;
 using RetroGames.Services.ServiceModels;
 using RetroGames.WebApi.ApiModels;
 
@@ -15,6 +16,37 @@ public static class JogoMapper
             IdGenero = request.IdGenero,
             Pagina = request.Pagina,
             TamanhoPagina = request.TamanhoPagina
+        };
+    }
+
+    public static Jogo ParaModel(this InserirJogoRequestApiModel request)
+    {
+        return new Jogo
+        {
+            Nome = request.Nome ?? string.Empty,
+            Descricao = request.Descricao,
+            AnoLancamento = request.AnoLancamento,
+            Preco = request.Preco,
+            Estoque = request.Estoque,
+            IdPlataforma = request.IdPlataforma,
+            IdCondicaoJogo = request.IdCondicaoJogo
+        };
+    }
+
+    /// <summary>O id vem da rota (PUT /api/Jogo/{id}), não do corpo.</summary>
+    public static Jogo ParaModel(this AlterarJogoRequestApiModel request, int id)
+    {
+        return new Jogo
+        {
+            Id = id,
+            Nome = request.Nome ?? string.Empty,
+            Descricao = request.Descricao,
+            AnoLancamento = request.AnoLancamento,
+            Preco = request.Preco,
+            Estoque = request.Estoque,
+            Ativo = request.Ativo,
+            IdPlataforma = request.IdPlataforma,
+            IdCondicaoJogo = request.IdCondicaoJogo
         };
     }
 
