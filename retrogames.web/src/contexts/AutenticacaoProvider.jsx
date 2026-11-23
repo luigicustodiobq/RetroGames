@@ -58,6 +58,8 @@ export default function AutenticacaoProvider({ children }) {
       carregando,
       estaAutenticado: usuario !== null,
       ehAdministrador: usuario?.perfil === PERFIL_ADMINISTRADOR,
+      // C02: cliente = logado e não administrador.
+      ehCliente: usuario !== null && usuario.perfil !== PERFIL_ADMINISTRADOR,
       entrar,
       cadastrar,
       sair,

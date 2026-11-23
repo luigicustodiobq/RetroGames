@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAutenticacao } from '../hooks/useAutenticacao'
+import { useCarrinho } from '../hooks/useCarrinho'
 import Logo from './Logo'
 
 const ANO_ATUAL = new Date().getFullYear()
@@ -11,7 +12,9 @@ const ANO_ATUAL = new Date().getFullYear()
  * O menu muda conforme quem está logado (visitante, cliente ou administrador).
  */
 export default function Layout() {
-  const { usuario, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
+  const { usuario, estaAutenticado, ehAdministrador, ehCliente, sair } = useAutenticacao()
+  const { totalItens } = useCarrinho()
+  const rotuloCarrinho = `Carrinho, ${totalItens} ${totalItens === 1 ? 'item' : 'itens'}`
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
   const fecharMenu = () => setMenuAberto(false)
@@ -52,6 +55,23 @@ export default function Layout() {
                 </NavLink>
               </li>
 
+              {/* C02: cliente logado vê Carrinho e Meus pedidos; o menu Administração fica oculto. */}
+              {ehCliente && (
+                <>
+                  <li className="nav-item">
+                    <NavLink to="/carrinho" className="nav-link" onClick={fecharMenu} aria-label={rotuloCarrinho}>
+                      Carrinho
+                      <span className="badge rounded-pill rg-badge-carrinho" aria-hidden="true">{totalItens}</span>
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink to="/meus-pedidos" className="nav-link" onClick={fecharMenu}>
+                      Meus pedidos
+                    </NavLink>
+                  </li>
+                </>
+              )}
+
               {ehAdministrador && (
                 <li className="nav-item dropdown">
                   <button
@@ -88,6 +108,14 @@ export default function Layout() {
                 </>
               ) : (
                 <>
+                  {/* Visitante com itens guardados: atalho discreto para o carrinho. */}
+                  {totalItens > 0 && (
+                    <li className="nav-item">
+                      <NavLink to="/carrinho" className="nav-link" onClick={fecharMenu} aria-label={rotuloCarrinho}>
+                        🛒 <span className="badge rounded-pill rg-badge-carrinho" aria-hidden="true">{totalItens}</span>
+                      </NavLink>
+                    </li>
+                  )}
                   <li className="nav-item">
                     <NavLink to="/login" className="nav-link" onClick={fecharMenu}>Entrar</NavLink>
                   </li>
