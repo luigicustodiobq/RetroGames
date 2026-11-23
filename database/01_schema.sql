@@ -1,6 +1,6 @@
 -- =====================================================================
 -- RetroGames - 01_schema.sql
--- Criação do banco e das tabelas do Módulo de Catálogo e Administração.
+-- Criação do banco e das tabelas dos Módulos de Catálogo, Administração e Compras.
 -- Referência: Especificação RetroGames - Arquitetura e Stack, seções 4.1 a 4.3.
 --
 -- Regras seguidas:
@@ -103,4 +103,42 @@ CREATE TABLE IF NOT EXISTS tb_usuario (
     CONSTRAINT uk_usuario_email UNIQUE (ds_email),
     CONSTRAINT fk_usuario_perfil
         FOREIGN KEY (co_perfil) REFERENCES tb_perfil (co_perfil)
+);
+
+-- ---------------------------------------------------------------------
+-- Módulo de Compras (Desafio C04)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS tb_situacao_pedido (
+    co_situacao_pedido  INT          NOT NULL,
+    ds_situacao_pedido  VARCHAR(50)  NOT NULL,
+    CONSTRAINT pk_situacao_pedido PRIMARY KEY (co_situacao_pedido),
+    CONSTRAINT uk_situacao_pedido_ds UNIQUE (ds_situacao_pedido)
+);
+
+CREATE TABLE IF NOT EXISTS tb_pedido (
+    co_seq_pedido       INT            NOT NULL AUTO_INCREMENT,
+    dt_pedido           DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    vl_total            DECIMAL(10,2)  NOT NULL,
+    co_usuario          INT            NOT NULL,
+    co_situacao_pedido  INT            NOT NULL,
+    CONSTRAINT pk_pedido PRIMARY KEY (co_seq_pedido),
+    INDEX ix_pedido_usuario (co_usuario),
+    CONSTRAINT fk_pedido_usuario
+        FOREIGN KEY (co_usuario) REFERENCES tb_usuario (co_seq_usuario),
+    CONSTRAINT fk_pedido_situacao_pedido
+        FOREIGN KEY (co_situacao_pedido) REFERENCES tb_situacao_pedido (co_situacao_pedido)
+);
+
+CREATE TABLE IF NOT EXISTS tb_item_pedido (
+    co_seq_item_pedido  INT            NOT NULL AUTO_INCREMENT,
+    qt_item             INT            NOT NULL,
+    vl_unitario         DECIMAL(10,2)  NOT NULL,
+    co_pedido           INT            NOT NULL,
+    co_jogo             INT            NOT NULL,
+    CONSTRAINT pk_item_pedido PRIMARY KEY (co_seq_item_pedido),
+    CONSTRAINT uk_item_pedido_pedido_jogo UNIQUE (co_pedido, co_jogo),
+    CONSTRAINT fk_item_pedido_pedido
+        FOREIGN KEY (co_pedido) REFERENCES tb_pedido (co_seq_pedido),
+    CONSTRAINT fk_item_pedido_jogo
+        FOREIGN KEY (co_jogo) REFERENCES tb_jogo (co_seq_jogo)
 );

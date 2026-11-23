@@ -28,4 +28,16 @@ public static class BusinessErrors
 
     public static readonly BusinessError EMAIL_JA_CADASTRADO =
         new(106, "Já existe uma conta com este e-mail.", HttpStatusCode.Conflict);
+
+    public static readonly BusinessError PEDIDO_NAO_ENCONTRADO =
+        new(109, "Pedido não encontrado.", HttpStatusCode.NotFound);
+
+    public static readonly BusinessError JOGO_INDISPONIVEL =
+        new(110, "Um ou mais jogos não estão disponíveis para venda.", HttpStatusCode.BadRequest);
+
+    public static readonly BusinessError ESTOQUE_INSUFICIENTE =
+        new(111, "Estoque insuficiente.", HttpStatusCode.Conflict);
+
+    public static readonly BusinessError PEDIDO_DE_OUTRO_USUARIO =
+        new(113, "Este pedido pertence a outro usuário.", HttpStatusCode.Forbidden);
 }

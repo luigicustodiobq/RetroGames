@@ -1,23 +1,56 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { obterMensagemErro } from '../../api/erros'
+import { pedidoApi } from '../../api/servicos'
 import { EstadoVazio } from '../../components/MensagensEstado'
 import SeletorQuantidade from '../../components/SeletorQuantidade'
 import { useCarrinho } from '../../hooks/useCarrinho'
 import { formatarPreco } from '../../lib/formato'
 
-/** C03: carrinho de compras (rota "/carrinho", exige login). */
+/** C03/C04: carrinho de compras e finalização (rota "/carrinho", exige login). */
 export default function Carrinho() {
-  const { itens, totalItens, valorTotal, alterarQuantidade, removerItem, limiteDoItem } = useCarrinho()
+  const {
+    itens, totalItens, valorTotal, alterarQuantidade, removerItem, adicionarItem, limparCarrinho, limiteDoItem,
+  } = useCarrinho()
+  const navigate = useNavigate()
   const [aviso, setAviso] = useState('')
+  const [ultimoRemovido, setUltimoRemovido] = useState(null)
+  const [erroCompra, setErroCompra] = useState('')
+  const [finalizando, setFinalizando] = useState(false)
 
   function remover(item) {
     removerItem(item.idJogo)
-    // Heurística #3 (controle e liberdade): o usuário pode desfazer adicionando de novo pelo link.
+    setUltimoRemovido(item)
     setAviso(`"${item.nome}" foi removido do carrinho.`)
   }
 
-  function finalizarCompra() {
-    setAviso('A finalização da compra estará disponível em breve.')
+  // Heurística #3 (controle e liberdade): a remoção pode ser desfeita.
+  function desfazerRemocao() {
+    const item = ultimoRemovido
+    adicionarItem(
+      { id: item.idJogo, nome: item.nome, nomePlataforma: item.nomePlataforma, preco: item.preco, estoque: item.estoque },
+      item.quantidade,
+    )
+    setUltimoRemovido(null)
+    setAviso(`"${item.nome}" voltou para o carrinho.`)
+  }
+
+  async function finalizarCompra() {
+    setFinalizando(true)
+    setErroCompra('')
+    setAviso('')
+    try {
+      // Só jogo e quantidade: a API usa o preço do banco e o usuário da sessão.
+      const pedido = await pedidoApi.finalizar(
+        itens.map((item) => ({ idJogo: item.idJogo, quantidade: item.quantidade })),
+      )
+      limparCarrinho()
+      navigate('/meus-pedidos', { state: { idPedidoCriado: pedido.id } })
+    } catch (falha) {
+      // 110 (jogo indisponível), 111 (estoque insuficiente) ou erro de validação: o carrinho é mantido.
+      setErroCompra(obterMensagemErro(falha))
+      setFinalizando(false)
+    }
   }
 
   if (itens.length === 0) {
@@ -27,7 +60,14 @@ export default function Carrinho() {
           <p className="rg-eyebrow">Sua compra</p>
           <h1 className="rg-titulo-pagina">Carrinho</h1>
         </header>
-        {aviso && <div className="alert alert-info" role="status">{aviso}</div>}
+        {aviso && (
+          <div className="alert alert-info d-flex justify-content-between align-items-center gap-2" role="status">
+            <span>{aviso}</span>
+            {ultimoRemovido && (
+              <button type="button" className="btn btn-outline-light btn-sm" onClick={desfazerRemocao}>Desfazer</button>
+            )}
+          </div>
+        )}
         <EstadoVazio
           icone="🛒"
           titulo="Seu carrinho está vazio"
@@ -52,7 +92,19 @@ export default function Carrinho() {
       {aviso && (
         <div className="alert alert-info d-flex justify-content-between align-items-center gap-2" role="status">
           <span>{aviso}</span>
-          <button type="button" className="btn-close btn-close-white" aria-label="Fechar aviso" onClick={() => setAviso('')} />
+          <span className="d-flex align-items-center gap-2">
+            {ultimoRemovido && (
+              <button type="button" className="btn btn-outline-light btn-sm" onClick={desfazerRemocao}>Desfazer</button>
+            )}
+            <button type="button" className="btn-close btn-close-white" aria-label="Fechar aviso" onClick={() => setAviso('')} />
+          </span>
+        </div>
+      )}
+
+      {erroCompra && (
+        <div className="alert alert-danger" role="alert">
+          <strong>Não foi possível finalizar a compra.</strong> {erroCompra}{' '}
+          Ajuste as quantidades ou remova o item e tente novamente.
         </div>
       )}
 
@@ -116,8 +168,10 @@ export default function Carrinho() {
             <p className="small text-body-secondary mt-2">
               O valor final é confirmado com os preços atuais da loja no momento da compra.
             </p>
-            <button type="button" className="btn btn-primary w-100" onClick={finalizarCompra}>
-              Finalizar compra
+            {/* Heurística #1 (visibilidade do status): o botão mostra que o pedido está sendo enviado. */}
+            <button type="button" className="btn btn-primary w-100" onClick={finalizarCompra} disabled={finalizando}>
+              {finalizando && <span className="spinner-border spinner-border-sm" aria-hidden="true" />}
+              {finalizando ? 'Finalizando...' : 'Finalizar compra'}
             </button>
             <Link to="/" className="btn btn-outline-light w-100 mt-2">Continuar comprando</Link>
           </div>

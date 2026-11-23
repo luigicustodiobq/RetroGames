@@ -174,6 +174,26 @@ public class JogoRepository : RepositoryBase, IJogoRepository
         await ExecutarGravacaoAsync(comando);
     }
 
+    public async Task<bool> AtualizarEstoqueAsync(int id, int quantidadeVendida)
+    {
+        // A subtração é feita pelo banco, e a condição qt_estoque >= @quantidade impede estoque negativo
+        // mesmo com duas compras simultâneas do mesmo jogo.
+        const string sql = """
+            UPDATE tb_jogo
+               SET qt_estoque = qt_estoque - @quantidade
+             WHERE co_seq_jogo = @id
+               AND qt_estoque >= @quantidade
+            """;
+
+        await using var conexao = await AbrirConexaoAsync();
+        await using var comando = CriarComando(conexao, sql);
+        AdicionarParametro(comando, "@quantidade", quantidadeVendida);
+        AdicionarParametro(comando, "@id", id);
+
+        var linhasAfetadas = await ExecutarGravacaoAsync(comando);
+        return linhasAfetadas == 1;
+    }
+
     /// <summary>Parâmetros comuns a inserir e alterar.</summary>
     private void AdicionarParametrosDeDados(MySqlCommand comando, Jogo jogo)
     {

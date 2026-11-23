@@ -37,6 +37,11 @@ export const jogoApi = {
   desativar: (id) => api.delete(`/Jogo/${id}`),
 }
 
+export const pedidoApi = {
+  /** C04: itens = [{ idJogo, quantidade }]. Devolve o pedido criado (HTTP 201). */
+  finalizar: (itens) => obterDados(api.post('/Pedido', { itens })),
+}
+
 export const autenticacaoApi = {
   entrar: (email, senha) => obterDados(api.post('/Autenticacao/login', { email, senha })),
   /** C01: cria a conta de cliente e já devolve a sessão iniciada (HTTP 201). */

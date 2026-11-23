@@ -21,6 +21,9 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IGeneroRepository, GeneroRepository>();
         services.AddScoped<ICondicaoJogoRepository, CondicaoJogoRepository>();
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+        services.AddScoped<ISituacaoPedidoRepository, SituacaoPedidoRepository>();
+        services.AddScoped<IPedidoRepository, PedidoRepository>();
+        services.AddScoped<IItemPedidoRepository, ItemPedidoRepository>();
         services.AddScoped<IRepositorySet, RepositorySet>();
 
         return services;
@@ -33,6 +36,7 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IGeneroService, GeneroService>();
         services.AddScoped<ICondicaoJogoService, CondicaoJogoService>();
         services.AddScoped<IJogoService, JogoService>();
+        services.AddScoped<IPedidoService, PedidoService>();
 
         // Usuário da requisição atual (lido do cookie), usado pelo JogoService na RN04.
         services.AddHttpContextAccessor();

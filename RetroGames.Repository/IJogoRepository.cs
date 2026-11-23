@@ -43,4 +43,12 @@ public interface IJogoRepository
 
     /// <summary>Exclusão lógica: marca o jogo como inativo (st_ativo = FALSE).</summary>
     Task DesativarAsync(int id);
+
+    /// <summary>
+    /// C04: baixa do estoque após uma venda (qt_estoque = qt_estoque - quantidade).
+    /// O UPDATE só acontece se ainda houver estoque suficiente; devolve false quando
+    /// nenhuma linha foi alterada (por exemplo, outra compra levou as últimas unidades).
+    /// Quem decide o que fazer com o false é o Service.
+    /// </summary>
+    Task<bool> AtualizarEstoqueAsync(int id, int quantidadeVendida);
 }
