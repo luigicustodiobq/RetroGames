@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Catalogo from './pages/Catalogo/Catalogo'
 import DetalheJogo from './pages/DetalheJogo/DetalheJogo'
+import Login from './pages/Login/Login'
 import NaoEncontrada from './pages/NaoEncontrada'
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Catalogo />} />
         <Route path="/jogos/:id" element={<DetalheJogo />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
     </Routes>

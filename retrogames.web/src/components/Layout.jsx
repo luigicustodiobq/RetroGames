@@ -1,14 +1,26 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAutenticacao } from '../hooks/useAutenticacao'
 import Logo from './Logo'
+
+const ANO_ATUAL = new Date().getFullYear()
 
 /**
  * Estrutura comum a todas as páginas: barra de navegação responsiva
  * (menu colapsável em telas estreitas), conteúdo da rota e rodapé.
+ * O menu muda conforme quem está logado (visitante, cliente ou administrador).
  */
 export default function Layout() {
+  const { usuario, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
+  const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
   const fecharMenu = () => setMenuAberto(false)
+
+  async function aoSair() {
+    fecharMenu()
+    await sair()
+    navigate('/')
+  }
 
   return (
     <>
@@ -39,6 +51,51 @@ export default function Layout() {
                   Catálogo
                 </NavLink>
               </li>
+
+              {ehAdministrador && (
+                <li className="nav-item dropdown">
+                  <button
+                    type="button"
+                    className="nav-link dropdown-toggle btn btn-link text-start"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Administração
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <Link to="/admin/jogos" className="dropdown-item" onClick={fecharMenu}>Jogos</Link>
+                    </li>
+                    <li>
+                      <Link to="/admin/plataformas" className="dropdown-item" onClick={fecharMenu}>Plataformas</Link>
+                    </li>
+                  </ul>
+                </li>
+              )}
+            </ul>
+
+            <ul className="navbar-nav align-items-lg-center gap-2">
+              {estaAutenticado ? (
+                <>
+                  <li className="nav-item rg-saudacao px-lg-2">
+                    Olá, <strong>{usuario.nome}</strong>
+                  </li>
+                  <li className="nav-item">
+                    <button type="button" className="btn btn-outline-light btn-sm" onClick={aoSair}>
+                      Sair
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="nav-item">
+                    <NavLink to="/login" className="nav-link" onClick={fecharMenu}>Entrar</NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/cadastro" className="btn btn-primary btn-sm" onClick={fecharMenu}>Cadastrar</Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </nav>
@@ -50,7 +107,7 @@ export default function Layout() {
 
       <footer className="rg-rodape py-4">
         <div className="container d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
-          <span>© {new Date().getFullYear()} RetroGames — clássicos testados e garantidos.</span>
+          <span>© {ANO_ATUAL} RetroGames — clássicos testados e garantidos.</span>
           <Link to="/">Voltar ao catálogo</Link>
         </div>
       </footer>
