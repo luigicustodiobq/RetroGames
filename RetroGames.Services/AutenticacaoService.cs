@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using RetroGames.Model.Constantes;
 using RetroGames.Model.Model;
 using RetroGames.Repository;
+using RetroGames.Services.Erros;
 
 namespace RetroGames.Services;
 
@@ -48,5 +49,36 @@ public class AutenticacaoService : IAutenticacaoService
         administrador.SenhaHash = passwordHasher.HashPassword(administrador, senha);
 
         await repositorio.Usuario.InserirAsync(administrador);
+    }
+
+    public async Task<Usuario> CadastrarClienteAsync(string nome, string email, string senha)
+    {
+        var emailNormalizado = email.Trim();
+
+        if (await repositorio.Usuario.BuscarPorEmailAsync(emailNormalizado) is not null)
+        {
+            throw new BusinessRuleException(BusinessErrors.EMAIL_JA_CADASTRADO);
+        }
+
+        var cliente = new Usuario
+        {
+            Nome = nome.Trim(),
+            Email = emailNormalizado,
+            Ativo = true,
+            IdPerfil = PerfilIds.Cliente
+        };
+        cliente.SenhaHash = passwordHasher.HashPassword(cliente, senha);
+
+        try
+        {
+            cliente.Id = await repositorio.Usuario.InserirAsync(cliente);
+        }
+        catch (RegistroDuplicadoException ex)
+        {
+            // Outra requisição cadastrou o mesmo e-mail entre a verificação e o INSERT (UNIQUE em ds_email).
+            throw new BusinessRuleException(BusinessErrors.EMAIL_JA_CADASTRADO, ex);
+        }
+
+        return cliente;
     }
 }

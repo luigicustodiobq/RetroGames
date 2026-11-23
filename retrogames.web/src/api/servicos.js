@@ -39,6 +39,8 @@ export const jogoApi = {
 
 export const autenticacaoApi = {
   entrar: (email, senha) => obterDados(api.post('/Autenticacao/login', { email, senha })),
+  /** C01: cria a conta de cliente e já devolve a sessão iniciada (HTTP 201). */
+  cadastrar: (nome, email, senha) => obterDados(api.post('/Autenticacao/cadastrar', { nome, email, senha })),
   sair: () => api.post('/Autenticacao/logout'),
   usuarioAtual: () => obterDados(api.get('/Autenticacao/eu')),
 }

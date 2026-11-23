@@ -25,4 +25,7 @@ public static class BusinessErrors
 
     public static readonly BusinessError GENERO_NAO_ENCONTRADO =
         new(105, "Um ou mais gêneros informados não existem.", HttpStatusCode.NotFound);
+
+    public static readonly BusinessError EMAIL_JA_CADASTRADO =
+        new(106, "Já existe uma conta com este e-mail.", HttpStatusCode.Conflict);
 }

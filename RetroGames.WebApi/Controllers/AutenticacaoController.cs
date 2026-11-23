@@ -39,6 +39,25 @@ public class AutenticacaoController : ControllerBase
         return Ok(new RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>(MontarUsuarioLogado(principal)));
     }
 
+    /// <summary>
+    /// C01: cadastra um cliente e já inicia a sessão (cookie retrogames.sessao).
+    /// HTTP 201 com os dados do usuário logado; 409 (responseCode 106) se o e-mail já existir.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("cadastrar")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>>> Cadastrar(
+        [FromBody] CadastrarClienteRequestApiModel request)
+    {
+        var cliente = await autenticacaoService.CadastrarClienteAsync(request.Nome!, request.Email!, request.Senha!);
+
+        var principal = cliente.ParaClaimsPrincipal();
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        return CreatedAtAction(
+            nameof(Eu),
+            new RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>(MontarUsuarioLogado(principal)));
+    }
+
     /// <summary>Encerra a sessão (apaga o cookie).</summary>
     [Authorize]
     [HttpPost("logout")]

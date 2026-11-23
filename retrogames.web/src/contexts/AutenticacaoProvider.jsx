@@ -37,6 +37,13 @@ export default function AutenticacaoProvider({ children }) {
     return dados
   }, [])
 
+  // C01: o cadastro já devolve o usuário com a sessão iniciada pela API.
+  const cadastrar = useCallback(async (nome, email, senha) => {
+    const dados = await autenticacaoApi.cadastrar(nome, email, senha)
+    setUsuario(dados)
+    return dados
+  }, [])
+
   const sair = useCallback(async () => {
     try {
       await autenticacaoApi.sair()
@@ -52,9 +59,10 @@ export default function AutenticacaoProvider({ children }) {
       estaAutenticado: usuario !== null,
       ehAdministrador: usuario?.perfil === PERFIL_ADMINISTRADOR,
       entrar,
+      cadastrar,
       sair,
     }),
-    [usuario, carregando, entrar, sair],
+    [usuario, carregando, entrar, cadastrar, sair],
   )
 
   return <AutenticacaoContext.Provider value={valor}>{children}</AutenticacaoContext.Provider>
