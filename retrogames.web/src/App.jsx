@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import RotaProtegida from './components/RotaProtegida'
+import Plataforma from './pages/Auxiliares/Plataforma'
 import Catalogo from './pages/Catalogo/Catalogo'
 import DetalheJogo from './pages/DetalheJogo/DetalheJogo'
 import Login from './pages/Login/Login'
@@ -18,6 +19,7 @@ function App() {
         {/* Administração: só para o perfil Administrador */}
         <Route path="/admin" element={<RotaProtegida somenteAdministrador />}>
           <Route index element={<Navigate to="/admin/jogos" replace />} />
+          <Route path="plataformas" element={<Plataforma />} />
         </Route>
 
         <Route path="*" element={<NaoEncontrada />} />
