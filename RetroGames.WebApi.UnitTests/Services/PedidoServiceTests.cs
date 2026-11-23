@@ -172,6 +172,67 @@ public class PedidoServiceTests
     }
 
     [Fact]
+    public async Task ListarMeusPedidos_ConsultaSoOUsuarioLogadoEMontaSituacaoEItensComLinq()
+    {
+        // Arrange: o Repository devolve fora de ordem; o Service ordena do mais recente para o mais antigo.
+        var antigo = new Pedido
+        {
+            Id = 1, IdUsuario = IdUsuarioLogado, DataPedido = new DateTime(2026, 11, 1, 10, 0, 0, DateTimeKind.Utc),
+            ValorTotal = 199.90m, IdSituacaoPedido = SituacaoPedidoIds.Enviado
+        };
+        var recente = new Pedido
+        {
+            Id = 2, IdUsuario = IdUsuarioLogado, DataPedido = new DateTime(2026, 11, 20, 15, 30, 0, DateTimeKind.Utc),
+            ValorTotal = 179.00m, IdSituacaoPedido = SituacaoPedidoIds.Pendente
+        };
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync(new List<Pedido> { antigo, recente });
+        itemPedidoRepository
+            .Setup(r => r.ListarPorPedidosAsync(It.IsAny<IReadOnlyCollection<int>>()))
+            .ReturnsAsync(new List<ItemPedido>
+            {
+                new() { Id = 10, IdPedido = 1, IdJogo = 7, Quantidade = 1, ValorUnitario = 199.90m },
+                new() { Id = 11, IdPedido = 2, IdJogo = 8, Quantidade = 2, ValorUnitario = 89.50m }
+            });
+        jogoRepository
+            .Setup(r => r.ListarAsync(null, null, It.IsAny<IReadOnlyCollection<int>?>(), true, 1, It.IsAny<int>()))
+            .ReturnsAsync((new List<Jogo>
+            {
+                new() { Id = 7, Nome = "Chrono Trigger" },
+                new() { Id = 8, Nome = "Sonic" }
+            }, 2));
+
+        // Act
+        var pedidos = await service.ListarMeusPedidosAsync();
+
+        // Assert
+        pedidoRepository.Verify(r => r.ListarPorUsuarioAsync(IdUsuarioLogado), Times.Once);
+        Assert.Equal(new[] { 2, 1 }, pedidos.Select(p => p.Pedido.Id));
+
+        Assert.Equal("Pendente", pedidos[0].DescricaoSituacao);
+        var itemRecente = Assert.Single(pedidos[0].Itens);
+        Assert.Equal("Sonic", itemRecente.NomeJogo);
+        Assert.Equal(2, itemRecente.ItemPedido.Quantidade);
+        Assert.Equal(89.50m, itemRecente.ItemPedido.ValorUnitario);
+
+        Assert.Equal("Enviado", pedidos[1].DescricaoSituacao);
+        Assert.Equal("Chrono Trigger", Assert.Single(pedidos[1].Itens).NomeJogo);
+    }
+
+    [Fact]
+    public async Task ListarMeusPedidos_SemPedidos_DevolveListaVaziaSemConsultarItens()
+    {
+        // Arrange
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync(new List<Pedido>());
+
+        // Act
+        var pedidos = await service.ListarMeusPedidosAsync();
+
+        // Assert
+        Assert.Empty(pedidos);
+        itemPedidoRepository.Verify(r => r.ListarPorPedidosAsync(It.IsAny<IReadOnlyCollection<int>>()), Times.Never);
+    }
+
+    [Fact]
     public async Task BuscarMeuPedido_IdInexistente_LancaPedidoNaoEncontrado()
     {
         // Arrange

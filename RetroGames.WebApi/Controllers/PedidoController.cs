@@ -34,6 +34,15 @@ public class PedidoController : ControllerBase
             new RetroGamesResponseApiModel<PedidoResponseApiModel>(pedido.ParaResponse()));
     }
 
+    /// <summary>C05: pedidos do usuário logado, do mais recente para o mais antigo.</summary>
+    [HttpGet("meus")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<List<PedidoResponseApiModel>>>> ListarMeus()
+    {
+        var pedidos = await pedidoService.ListarMeusPedidosAsync();
+        var resposta = pedidos.Select(pedido => pedido.ParaResponse()).ToList();
+        return Ok(new RetroGamesResponseApiModel<List<PedidoResponseApiModel>>(resposta));
+    }
+
     /// <summary>Um pedido do usuário logado. Erros: 404 (109) e 403 (113 - pedido de outro usuário).</summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<RetroGamesResponseApiModel<PedidoResponseApiModel>>> BuscarPorId(int id)

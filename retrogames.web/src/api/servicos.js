@@ -40,6 +40,8 @@ export const jogoApi = {
 export const pedidoApi = {
   /** C04: itens = [{ idJogo, quantidade }]. Devolve o pedido criado (HTTP 201). */
   finalizar: (itens) => obterDados(api.post('/Pedido', { itens })),
+  /** C05: pedidos do usuário logado, do mais recente para o mais antigo. */
+  listarMeus: () => obterDados(api.get('/Pedido/meus')),
 }
 
 export const autenticacaoApi = {

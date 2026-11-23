@@ -89,6 +89,19 @@ public class PedidoService : IPedidoService
         return Montar(pedido, itensGravados, nomesJogos, situacoes);
     }
 
+    public async Task<List<PedidoDetalheServiceModel>> ListarMeusPedidosAsync()
+    {
+        var idUsuario = ObterIdUsuarioLogado();
+
+        // O filtro pelo usuário da sessão garante que um cliente nunca veja pedidos de outro.
+        var pedidos = (await repositorio.Pedido.ListarPorUsuarioAsync(idUsuario))
+            .OrderByDescending(pedido => pedido.DataPedido)
+            .ThenByDescending(pedido => pedido.Id)
+            .ToList();
+
+        return await MontarDetalhesAsync(pedidos);
+    }
+
     public async Task<PedidoDetalheServiceModel> BuscarMeuPedidoAsync(int id)
     {
         var idUsuario = ObterIdUsuarioLogado();

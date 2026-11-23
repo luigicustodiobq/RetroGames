@@ -11,6 +11,12 @@ public interface IPedidoService
     /// </summary>
     Task<PedidoDetalheServiceModel> FinalizarCompraAsync(IReadOnlyCollection<ItemCompraServiceModel> itens);
 
+    /// <summary>
+    /// C05: só os pedidos do usuário logado, do mais recente para o mais antigo,
+    /// com a descrição da situação e os itens (nome do jogo, quantidade e preço pago).
+    /// </summary>
+    Task<List<PedidoDetalheServiceModel>> ListarMeusPedidosAsync();
+
     /// <summary>Um pedido do usuário logado; erros 109 (não existe) e 113 (é de outro usuário).</summary>
     Task<PedidoDetalheServiceModel> BuscarMeuPedidoAsync(int id);
 }
