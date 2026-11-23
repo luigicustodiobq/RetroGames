@@ -11,6 +11,9 @@ async function obterDados(promessa) {
 export const plataformaApi = {
   listar: () => obterDados(api.get('/Plataforma')),
   buscarPorId: (id) => obterDados(api.get(`/Plataforma/${id}`)),
+  inserir: (plataforma) => obterDados(api.post('/Plataforma', plataforma)),
+  alterar: (id, plataforma) => obterDados(api.put(`/Plataforma/${id}`, plataforma)),
+  excluir: (id) => api.delete(`/Plataforma/${id}`),
 }
 
 export const generoApi = {
@@ -28,6 +31,10 @@ export const jogoApi = {
   /** filtros: { busca, idPlataforma, idGenero, pagina, tamanhoPagina, incluirInativos } */
   listar: (filtros = {}) => obterDados(api.get('/Jogo', { params: filtros })),
   buscarPorId: (id) => obterDados(api.get(`/Jogo/${id}`)),
+  inserir: (jogo) => obterDados(api.post('/Jogo', jogo)),
+  alterar: (id, jogo) => obterDados(api.put(`/Jogo/${id}`, jogo)),
+  /** Exclusão lógica: o jogo fica inativo (DELETE /Jogo/{id}). */
+  desativar: (id) => api.delete(`/Jogo/${id}`),
 }
 
 export const autenticacaoApi = {
