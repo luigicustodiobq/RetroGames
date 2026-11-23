@@ -29,3 +29,9 @@ export const jogoApi = {
   listar: (filtros = {}) => obterDados(api.get('/Jogo', { params: filtros })),
   buscarPorId: (id) => obterDados(api.get(`/Jogo/${id}`)),
 }
+
+export const autenticacaoApi = {
+  entrar: (email, senha) => obterDados(api.post('/Autenticacao/login', { email, senha })),
+  sair: () => api.post('/Autenticacao/logout'),
+  usuarioAtual: () => obterDados(api.get('/Autenticacao/eu')),
+}
