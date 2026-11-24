@@ -22,5 +22,19 @@ public class FinalizarPedidoRequestValidator : AbstractValidator<FinalizarPedido
             item.RuleFor(i => i.Quantidade)
                 .InclusiveBetween(1, 10).WithMessage("A quantidade deve ser de 1 a 10.");
         });
+
+        // tb_item_pedido tem UNIQUE (co_pedido, co_jogo): o Service junta o mesmo jogo num único item.
+        // Por isso a quantidade final de cada jogo (soma das repetições) também precisa ficar entre 1 e 10.
+        RuleFor(x => x.Itens)
+            .Must(QuantidadeFinalPorJogoAteDez)
+            .WithMessage("A quantidade total de cada jogo deve ser de 1 a 10.")
+            .When(x => x.Itens is { Count: > 0 });
+    }
+
+    private static bool QuantidadeFinalPorJogoAteDez(List<ItemPedidoRequestApiModel>? itens)
+    {
+        return (itens ?? new List<ItemPedidoRequestApiModel>())
+            .GroupBy(item => item.IdJogo)
+            .All(grupo => grupo.Sum(item => item.Quantidade) is >= 1 and <= 10);
     }
 }
