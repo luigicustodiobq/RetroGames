@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { obterErrosDosCampos, obterMensagemErro } from '../../api/erros'
 import { useAutenticacao } from '../../hooks/useAutenticacao'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 const SENHA_MINIMA = 6
 
 /** C01: cadastro de cliente (rota "/cadastro"). Ao concluir, o cliente já fica logado. */
 export default function Cadastro() {
+  useTituloPagina('Criar conta')
   const { cadastrar } = useAutenticacao()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { obterErrosDosCampos, obterMensagemErro } from '../../api/erros'
 import { condicaoJogoApi, generoApi, jogoApi, plataformaApi } from '../../api/servicos'
 import { Carregando, MensagemErro } from '../../components/MensagensEstado'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 const FORMULARIO_VAZIO = {
   nome: '',
@@ -20,6 +21,7 @@ const FORMULARIO_VAZIO = {
 export default function FormularioJogo() {
   const { id } = useParams()
   const ehEdicao = Boolean(id)
+  useTituloPagina(ehEdicao ? 'Editar jogo' : 'Novo jogo')
   const navigate = useNavigate()
 
   const [plataformas, setPlataformas] = useState([])

@@ -8,11 +8,13 @@ import SeletorQuantidade from '../../components/SeletorQuantidade'
 import { useAutenticacao } from '../../hooks/useAutenticacao'
 import { useCarrinho } from '../../hooks/useCarrinho'
 import { formatarPreco } from '../../lib/formato'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 /** Detalhe de um jogo (rota "/jogos/:id"). */
 export default function DetalheJogo() {
   const { id } = useParams()
   const [jogo, setJogo] = useState(null)
+  useTituloPagina(jogo?.nome ?? 'Detalhe do jogo')
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [naoEncontrado, setNaoEncontrado] = useState(false)

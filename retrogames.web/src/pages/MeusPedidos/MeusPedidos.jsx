@@ -4,6 +4,7 @@ import { obterMensagemErro } from '../../api/erros'
 import { pedidoApi } from '../../api/servicos'
 import { Carregando, EstadoVazio, MensagemErro } from '../../components/MensagensEstado'
 import { formatarDataHora, formatarPreco } from '../../lib/formato'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 // Cor e texto de apoio de cada situação (Heurística #2: linguagem do usuário).
 const SITUACOES = {
@@ -15,6 +16,7 @@ const SITUACOES = {
 
 /** C05: pedidos do cliente logado (rota "/meus-pedidos", exige login). */
 export default function MeusPedidos() {
+  useTituloPagina('Meus pedidos')
   const location = useLocation()
   const idPedidoCriado = location.state?.idPedidoCriado
 

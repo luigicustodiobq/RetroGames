@@ -5,11 +5,13 @@ import { jogoApi } from '../../api/servicos'
 import { Carregando, EstadoVazio, MensagemErro } from '../../components/MensagensEstado'
 import Paginacao from '../../components/Paginacao'
 import { formatarPreco } from '../../lib/formato'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 const TAMANHO_PAGINA = 10
 
 /** Administração de jogos (rota "/admin/jogos"): lista ativos e inativos. */
 export default function Jogos() {
+  useTituloPagina('Jogos · Administração')
   const [searchParams, setSearchParams] = useSearchParams()
   const busca = searchParams.get('busca') ?? ''
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)

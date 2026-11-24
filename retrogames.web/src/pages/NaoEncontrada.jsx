@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useTituloPagina } from '../hooks/useTituloPagina'
 
 /** Página 404: rota inexistente. */
 export default function NaoEncontrada() {
+  useTituloPagina('Página não encontrada')
   return (
     <section className="rg-painel rg-estado mx-auto" style={{ maxWidth: 560 }}>
       <div className="rg-estado-icone" aria-hidden="true">👾</div>

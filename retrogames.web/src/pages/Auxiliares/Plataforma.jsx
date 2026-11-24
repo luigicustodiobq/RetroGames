@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { obterErrosDosCampos, obterMensagemErro } from '../../api/erros'
 import { plataformaApi } from '../../api/servicos'
 import { Carregando, EstadoVazio, MensagemErro } from '../../components/MensagensEstado'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 const FORMULARIO_VAZIO = { nome: '', fabricante: '', anoLancamento: '' }
 
 /** Administração de plataformas (rota "/admin/plataformas"): listar, incluir, editar e excluir. */
 export default function Plataforma() {
+  useTituloPagina('Plataformas · Administração')
   const [plataformas, setPlataformas] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erroLista, setErroLista] = useState('')

@@ -6,9 +6,11 @@ import { EstadoVazio } from '../../components/MensagensEstado'
 import SeletorQuantidade from '../../components/SeletorQuantidade'
 import { useCarrinho } from '../../hooks/useCarrinho'
 import { formatarPreco } from '../../lib/formato'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 /** C03/C04: carrinho de compras e finalização (rota "/carrinho", exige login). */
 export default function Carrinho() {
+  useTituloPagina('Carrinho')
   const {
     itens, totalItens, valorTotal, alterarQuantidade, removerItem, adicionarItem, limparCarrinho, limiteDoItem,
   } = useCarrinho()

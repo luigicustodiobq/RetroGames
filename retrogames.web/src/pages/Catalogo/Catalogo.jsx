@@ -5,6 +5,7 @@ import { generoApi, jogoApi, plataformaApi } from '../../api/servicos'
 import CardJogo from '../../components/CardJogo'
 import { Carregando, EstadoVazio, MensagemErro } from '../../components/MensagensEstado'
 import Paginacao from '../../components/Paginacao'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 const TAMANHO_PAGINA = 12
 
@@ -13,6 +14,7 @@ const TAMANHO_PAGINA = 12
  * então a busca pode ser compartilhada, recarregada e navegada com o botão Voltar.
  */
 export default function Catalogo() {
+  useTituloPagina('Catálogo')
   const [searchParams, setSearchParams] = useSearchParams()
   const busca = searchParams.get('busca') ?? ''
   const idPlataforma = searchParams.get('idPlataforma') ?? ''

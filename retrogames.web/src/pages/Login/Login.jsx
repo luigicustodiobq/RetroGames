@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { obterMensagemErro } from '../../api/erros'
 import { useAutenticacao } from '../../hooks/useAutenticacao'
+import { useTituloPagina } from '../../hooks/useTituloPagina'
 
 /** Tela de login (rota "/login"). Após entrar, volta para ?voltarPara= ou para o catálogo. */
 export default function Login() {
+  useTituloPagina('Entrar')
   const { entrar } = useAutenticacao()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
