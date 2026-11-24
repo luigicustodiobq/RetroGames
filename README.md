@@ -47,6 +47,9 @@ O administrador inicial é criado pela API na primeira execução, com os dados 
 
 Sem triggers, functions, `CHECK` ou `ON DELETE CASCADE/SET NULL`: as regras ficam no Service, onde são testadas.
 
+- **Banco novo:** `01_schema.sql` + `02_seed.sql` já incluem as três tabelas e as situações (validados num banco vazio).
+- **Banco existente (Aulas 1 a 6):** rode `database/04_modulo_compras.sql`. Ele é idempotente (`CREATE TABLE IF NOT EXISTS` + `INSERT IGNORE`) e não toca em usuários (o administrador continua), jogos ou plataformas.
+
 Relacionamentos: `tb_usuario 1 — N tb_pedido`, `tb_situacao_pedido 1 — N tb_pedido`, `tb_pedido 1 — N tb_item_pedido`, `tb_jogo 1 — N tb_item_pedido`.
 
 ---
@@ -115,23 +118,27 @@ Regras do Módulo de Compras:
 - **Usuário sempre da sessão:** `IdUsuario` é lido de `IUsuarioAtualService` (cookie), nunca do corpo.
 - **Transação única:** pedido, itens e baixa de estoque ficam no mesmo `TransactionScope`; `Complete()` só no final. Se qualquer passo falhar, nada é gravado.
 - **Estoque nunca negativo:** além da conferência no Service, o `UPDATE` de baixa só altera a linha se `qt_estoque >= quantidade`; se outra compra levar as últimas unidades no meio, o Service lança 111 e a transação é desfeita.
-- **Itens consolidados:** o mesmo jogo enviado duas vezes vira um único item (respeita o `UNIQUE (co_pedido, co_jogo)`).
+- **Itens consolidados:** o mesmo jogo enviado duas vezes vira um único item (respeita o `UNIQUE (co_pedido, co_jogo)`); o validator exige que a soma de cada jogo fique entre 1 e 10 (400 / código 3).
+- **Reativação de jogo:** no formulário de edição, o administrador marca "Ativo" e o `PUT /api/Jogo/{id}` grava `st_ativo = TRUE`, desfazendo a exclusão lógica.
 - **Carrinho no navegador:** `localStorage` (`retrogames_carrinho`) guarda só os itens; a sessão continua no cookie HttpOnly (RS01). Quantidade por jogo entre 1 e `min(10, estoque)`.
 
 ---
 
 ## Rastreabilidade de testes
 
-`dotnet test` — **29 testes, todos passando**.
+`dotnet test` — **40 testes, todos passando**. A tabela completa, teste a teste, está em [`docs/ESPECIFICACAO.md`, seção 7.1](docs/ESPECIFICACAO.md#71-rastreabilidade).
 
 | Arquivo | Testes | Cobre |
 | --- | --- | --- |
 | `PlataformaServiceTests` | 6 | 100, 101 (verificação e `RegistroDuplicadoException`), inclusão com id gerado, alteração mantendo o nome, 102 |
-| `JogoServiceTests` | 8 | RN05 (100, 104, 105 sem gravar), filtro por gênero com LINQ, listagem sem gênero, composição de plataforma/condição/gêneros, 103 na busca e na exclusão lógica (RN03) |
+| `JogoServiceTests` | 13 | RN05 (100, 104, 105 sem gravar), filtro por gênero com LINQ, listagem sem gênero, composição de plataforma/condição/gêneros, 103 na busca e na exclusão lógica (RN03), **RN04** (visitante não vê inativo; administrador com `incluirInativos` vê) e **reativação** com `Ativo = true` |
 | `GeneroServiceTests` | 2 | Listagem e lista vazia |
 | `CondicaoJogoServiceTests` | 1 | Listagem com as chaves fixas |
 | `AutenticacaoServiceTests` | 3 | **C01**: cadastro com perfil Cliente e senha em hash; 106 na verificação e na corrida do UNIQUE |
 | `PedidoServiceTests` | 9 | **C04**: total pelo preço do banco + baixa de estoque, consolidação de itens, 110 (inativo e inexistente) e 111 sem gravar · **C05**: só pedidos do usuário, ordenação e composição com LINQ, lista vazia · 109 e 113 |
+| `FinalizarPedidoRequestValidatorTests` | 6 | Lista vazia, quantidade fora de 1–10, **jogo repetido cuja soma passa de 10** (400 / código 3) |
+
+**Rede de segurança (Aula 9, Etapa 4):** com a checagem de nome duplicado de `PlataformaService` comentada, `dotnet test` acusou 1 falha (`Inserir_NomeJaCadastrado_LancaNomeDuplicadoENaoGrava`); desfeita a alteração, voltou a 40/40.
 
 Teste de ponta a ponta executado contra a API real (5080) e o MySQL 8.4 local:
 
@@ -142,6 +149,9 @@ Teste de ponta a ponta executado contra a API real (5080) e o MySQL 8.4 local:
 | Compra de 2 unidades (estoque 5) | HTTP 201, estoque 5 → 3, 1 linha em `tb_pedido` e em `tb_item_pedido`, total 2 × preço do banco | ✔ |
 | Compra acima do estoque | HTTP 409 (111), estoque e contagens inalterados | ✔ |
 | Jogo inativo / esgotado / quantidade 11 / lista vazia / sem sessão | 400 (110) / 409 (111) / 400 (3) / 400 (3) / 401 (4) | ✔ |
+| Mesmo jogo repetido somando 11 / somando 3 | 400 (3) / 201 com **um** item de 3 unidades | ✔ |
+| Dois pedidos seguidos em Meus pedidos | O mais recente primeiro | ✔ |
+| Administrador reativa jogo inativo (`PUT` com `ativo: true`) | `st_ativo` 0 → 1 e jogo volta ao catálogo público | ✔ |
 | Meus pedidos | HTTP 200 com o pedido, situação "Pendente" e itens com preço pago | ✔ |
 
 ---
