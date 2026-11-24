@@ -36,8 +36,8 @@ public interface IJogoRepository
     Task<int> InserirAsync(Jogo jogo);
 
     /// <summary>
-    /// Atualiza nome, descrição, ano, preço, estoque, plataforma e condição.
-    /// Não altera st_ativo nem dt_cadastro.
+    /// Atualiza nome, descrição, ano, preço, estoque, plataforma, condição e st_ativo
+    /// (st_ativo = TRUE reativa um jogo desativado logicamente). Não altera dt_cadastro.
     /// </summary>
     Task AlterarAsync(Jogo jogo);
 

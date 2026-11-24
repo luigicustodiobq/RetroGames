@@ -49,6 +49,11 @@ public class JogoServiceTests
             new() { Id = 2, Nome = "RPG" }
         });
 
+        // Padrão: sem vínculos de gênero (testes específicos sobrescrevem).
+        jogoGeneroRepository
+            .Setup(r => r.ListarPorJogosAsync(It.IsAny<IReadOnlyCollection<int>>()))
+            .ReturnsAsync(new List<JogoGenero>());
+
         service = new JogoService(repositorio.Object, usuarioAtual.Object);
     }
 
@@ -202,5 +207,101 @@ public class JogoServiceTests
         // Assert
         Assert.Equal(BusinessErrors.JOGO_NAO_ENCONTRADO, excecao.Erro);
         jogoRepository.Verify(r => r.DesativarAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    // ---------------------------------------------------------------------
+    // RN04: jogo inativo só é visível para administrador (IUsuarioAtualService mockado)
+    // ---------------------------------------------------------------------
+
+    private void ConfigurarListagemVazia()
+    {
+        jogoRepository
+            .Setup(r => r.ListarAsync(It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<IReadOnlyCollection<int>?>(),
+                It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((new List<Jogo>(), 0));
+    }
+
+    [Fact]
+    public async Task BuscarPorId_JogoInativoParaVisitante_LancaJogoNaoEncontrado()
+    {
+        // Arrange: visitante (não autenticado) e jogo desativado logicamente.
+        usuarioAtual.Setup(u => u.EstaAutenticado).Returns(false);
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(false);
+        jogoRepository.Setup(r => r.BuscarPorIdAsync(9))
+            .ReturnsAsync(new Jogo { Id = 9, Nome = "Mortal Kombat", IdPlataforma = 1, IdCondicaoJogo = 2, Ativo = false });
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.BuscarPorIdAsync(9));
+
+        // Assert: para quem não é administrador, jogo inativo é como se não existisse.
+        Assert.Equal(BusinessErrors.JOGO_NAO_ENCONTRADO, excecao.Erro);
+    }
+
+    [Fact]
+    public async Task BuscarPorId_JogoInativoParaAdministrador_DevolveODetalhe()
+    {
+        // Arrange
+        usuarioAtual.Setup(u => u.EstaAutenticado).Returns(true);
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(true);
+        jogoRepository.Setup(r => r.BuscarPorIdAsync(9))
+            .ReturnsAsync(new Jogo { Id = 9, Nome = "Mortal Kombat", IdPlataforma = 1, IdCondicaoJogo = 2, Ativo = false });
+
+        // Act
+        var detalhe = await service.BuscarPorIdAsync(9);
+
+        // Assert
+        Assert.False(detalhe.Jogo.Ativo);
+        Assert.Equal("Super Nintendo", detalhe.NomePlataforma);
+    }
+
+    [Fact]
+    public async Task Listar_VisitantePedindoInativos_RepositoryRecebeIncluirInativosFalse()
+    {
+        // Arrange
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(false);
+        ConfigurarListagemVazia();
+
+        // Act
+        await service.ListarAsync(new FiltroJogoServiceModel { IncluirInativos = true });
+
+        // Assert: o pedido de inativos é ignorado para quem não é administrador.
+        jogoRepository.Verify(r => r.ListarAsync(null, null, null, false, 1, 12), Times.Once);
+        jogoRepository.Verify(r => r.ListarAsync(It.IsAny<string?>(), It.IsAny<int?>(),
+            It.IsAny<IReadOnlyCollection<int>?>(), true, It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Listar_AdministradorComIncluirInativos_RepositoryRecebeIncluirInativosTrue()
+    {
+        // Arrange
+        usuarioAtual.Setup(u => u.EstaAutenticado).Returns(true);
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(true);
+        ConfigurarListagemVazia();
+
+        // Act
+        await service.ListarAsync(new FiltroJogoServiceModel { IncluirInativos = true });
+
+        // Assert
+        jogoRepository.Verify(r => r.ListarAsync(null, null, null, true, 1, 12), Times.Once);
+    }
+
+    [Fact]
+    public async Task Alterar_ComAtivoTrue_ReativaJogoDesativado()
+    {
+        // Arrange: o jogo existe inativo; o administrador envia Ativo = true no PUT.
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(true);
+        jogoRepository.SetupSequence(r => r.BuscarPorIdAsync(9))
+            .ReturnsAsync(new Jogo { Id = 9, Nome = "Mortal Kombat", IdPlataforma = 1, IdCondicaoJogo = 2, Ativo = false })
+            .ReturnsAsync(new Jogo { Id = 9, Nome = "Mortal Kombat", IdPlataforma = 1, IdCondicaoJogo = 2, Ativo = true });
+        var jogo = NovoJogo();
+        jogo.Id = 9;
+        jogo.Ativo = true;
+
+        // Act
+        var detalhe = await service.AlterarAsync(jogo, new List<int> { 1 });
+
+        // Assert
+        jogoRepository.Verify(r => r.AlterarAsync(It.Is<Jogo>(j => j.Id == 9 && j.Ativo)), Times.Once);
+        Assert.True(detalhe.Jogo.Ativo);
     }
 }

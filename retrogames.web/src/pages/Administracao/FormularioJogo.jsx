@@ -280,6 +280,29 @@ export default function FormularioJogo() {
               <div className="invalid-feedback d-block">{errosCampos.idsGeneros}</div>
             )}
           </fieldset>
+
+          {/* Só na edição: permite reativar um jogo desativado logicamente (RN03). */}
+          {ehEdicao && (
+            <div className="col-12">
+              <div className="form-check form-switch">
+                <input
+                  id="jogo-ativo"
+                  type="checkbox"
+                  role="switch"
+                  className="form-check-input"
+                  checked={formulario.ativo}
+                  onChange={(e) => setFormulario((atual) => ({ ...atual, ativo: e.target.checked }))}
+                  aria-describedby="jogo-ativo-ajuda"
+                />
+                <label htmlFor="jogo-ativo" className="form-check-label fw-semibold">
+                  {formulario.ativo ? 'Ativo — aparece no catálogo' : 'Inativo — fora do catálogo'}
+                </label>
+              </div>
+              <div id="jogo-ativo-ajuda" className="form-text">
+                Desmarque para tirar o jogo do catálogo sem apagá-lo; marque para reativar um jogo desativado.
+              </div>
+            </div>
+          )}
         </div>
 
         <hr className="my-4" />

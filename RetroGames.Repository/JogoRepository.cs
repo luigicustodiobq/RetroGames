@@ -151,13 +151,15 @@ public class JogoRepository : RepositoryBase, IJogoRepository
                    vl_preco = @preco,
                    qt_estoque = @estoque,
                    co_plataforma = @idPlataforma,
-                   co_condicao_jogo = @idCondicaoJogo
+                   co_condicao_jogo = @idCondicaoJogo,
+                   st_ativo = @ativo
              WHERE co_seq_jogo = @id
             """;
 
         await using var conexao = await AbrirConexaoAsync();
         await using var comando = CriarComando(conexao, sql);
         AdicionarParametrosDeDados(comando, jogo);
+        AdicionarParametro(comando, "@ativo", jogo.Ativo);
         AdicionarParametro(comando, "@id", jogo.Id);
 
         await ExecutarGravacaoAsync(comando);
